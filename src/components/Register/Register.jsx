@@ -1,6 +1,11 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  sendEmailVerification,
+} from "firebase/auth";
 import app from "../../firebase/firebase.config";
+import { Link } from "react-router-dom";
 
 const auth = getAuth(app);
 
@@ -30,7 +35,7 @@ const Register = () => {
       return;
     }
 
-    // 3.create user in fb
+    // 3.create user in firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
         const loggedUser = result.user;
@@ -38,11 +43,19 @@ const Register = () => {
         setError("");
         event.target.reset();
         setSuccess("user has been created successfully");
+        sendVerificationEmail(result.user);
       })
       .catch((error) => {
         console.log(error.message);
         setError(error.message);
       });
+  };
+
+  const sendVerificationEmail = (user) => {
+    sendEmailVerification(user).then((result) => {
+      console.log(result);
+      alert("please verify your email address");
+    });
   };
 
   const handleImageChange = (event) => {
@@ -80,6 +93,12 @@ const Register = () => {
         <br />
         <input className="btn btn-primary" type="submit" value="Register" />
       </form>
+      <p>
+        <small>
+          Already have an account ? Please
+          <Link to="/login">Login</Link>
+        </small>
+      </p>
       <p className="text-danger">{error}</p>
       <p className="text-success">{success}</p>
     </div>
