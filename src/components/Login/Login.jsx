@@ -1,5 +1,9 @@
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import React, { useState } from "react";
+import {
+  getAuth,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import React, { useRef, useState } from "react";
 import app from "../../firebase/firebase.config";
 import { Link } from "react-router-dom";
 
@@ -8,6 +12,7 @@ const auth = getAuth(app);
 const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const emailRef = useRef();
 
   const handleLogin = (event) => {
     event.preventDefault();
@@ -34,13 +39,28 @@ const Login = () => {
       .then((result) => {
         const loggedUser = result.user;
         console.log(loggedUser);
-        if(!loggedUser.emailVerified) {
-
+        if (!loggedUser.emailVerified) {
         }
         setSuccess("user login successfully");
         setError("");
       })
       .catch((error) => {
+        setError(error.message);
+      });
+  };
+
+  const handleResetPassword = (event) => {
+    const email = emailRef.current.value;
+    if (!email) {
+      alert("please provide your email address to reset password");
+      return;
+    }
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        alert("please check your email");
+      })
+      .catch((error) => {
+        console.log(error);
         setError(error.message);
       });
   };
@@ -56,6 +76,7 @@ const Login = () => {
             className="form-control"
             name="email"
             id="email"
+            ref={emailRef}
             placeholder="Enter email"
             required
           />
@@ -81,6 +102,14 @@ const Login = () => {
           Login
         </button>
       </form>
+      <p>
+        <small>
+          Forget Password ? Please{" "}
+          <button onClick={handleResetPassword} className="btn btn-link">
+            Reset Password
+          </button>
+        </small>
+      </p>
       <p>
         <small>
           New to this website ? Please
